@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import glob
+import re
+
+fastqdir=sys.argv[1]
+outputdir=sys.argv[2]
+STARdir =sys.argv[3]
+
+fastqlist=glob.glob(fastqdir + "/" + "*.fastq.gz")
+
+for fastq in fastqlist:
+    pathdirs = fastq.split("/")
+    fastqname = pathdirs[-1]
+    m = re.search('(.+?).fastq.gz',fastqname)
+    samplename = m.group(1)
+    jobname = samplename + "_" + "STAR"
+    outfnameprefix = outputdir + "/" + samplename
+    fname = jobname + ".sh"
+    script = open(fname,"w")
+    script.write("#!/bin/bash\n")
+    script.write("#PBS -N %s\n" %jobname)
+    script.write("#PBS -l walltime=24:00:00\n")
+    script.write("#PBS -l nodes=1:ppn=10\n")
+    script.write("#PBS -l mem=40GB\n")
+    script.write("#PBS -d %s\n" % outputdir)
+    script.write("\nmodule load gcc/6.2.0\n")
+    script.write("module load STAR\n")
+    #script.write("STAR --runMode alignReads --genomeDir /gpfs/data/pitroda-lab/ReferenceData/STAR_indexes/hg38_gencode.v29_50 --runThreadN 10 --alignEndsType EndToEnd --readFilesIn %s --outFileNamePrefix %s --outSAMtype BAM SortedByCoordinate --outReadsUnmapped Fastq --outMultimapperOrder Random --outSAMattrRGline ID:%s --outFilterMultimapNmax 20 --outFilterMismatchNmax 2\n" % (fastq, outfnameprefix, samplename))
+    script.write("STAR --runMode alignReads --genomeDir %s --runThreadN 10 --readFilesIn %s --readFilesCommand zcat -c --outFileNamePrefix %s --outSAMtype BAM Unsorted --chimSegmentMin 20 --outReadsUnmapped Fastq --outMultimapperOrder Random --outSAMattrRGline ID:%s --outFilterMultimapNmax 20 --outFilterMismatchNmax 2\n" % (STARdir, fastq, outfnameprefix, samplename))

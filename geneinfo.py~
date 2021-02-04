@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import glob
+import re
+
+gtfanno = sys.argv[1]
+geneinfo = gtfanno + ".geneinfo"
+
+gtf_file = open(gtfanno, "r")
+gtf_lines = gtf_file.readlines()
+gtf_file.close()
+
+with open(gtfanno, "r") as gtf_file:
+    for line in gtf_file:
+        line = line.strip()
+        gtfdata = line.split("\t")
+        if gtfdata[2] == "gene":
+            anno = gtfdata[-1]
+            m = re.search('gene_id \"(.*?\"', data)
+            gene_id = m.group(1)
+            print(gene_id)
+            
